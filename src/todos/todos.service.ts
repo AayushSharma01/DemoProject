@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Todo } from './todos.model';
 import { Model } from 'mongoose';
@@ -15,63 +15,54 @@ export class TodosService {
 
     async getTodos(query: TodoQuery): Promise<TodoDto[]> {
 
-        try {
+        const res = this.todoModel.find(query)
+        if (!res)
+            throw new NotFoundException(`Data for give ${query} does not exit.`);
+        return res;
 
-            return this.todoModel.find(query)
-        } catch (error) {
-            console.log(error)
-        }
 
     }
 
     async getTodo(id: string): Promise<TodoDto> {
 
-        try {
-            return await this.todoModel.findById(id);
-
-        } catch (error) {
-            console.log(error)
-        }
+        const res = await this.todoModel.findById(id);
+        if (!res)
+            throw new NotFoundException(`Data for give ${id} does not exit.`)
+        return res;
     }
 
     async getUserTodo(query: TodoQuery): Promise<TodoDto[]> {
 
-        try {
-            return await this.todoModel.find(query);
 
-        } catch (error) {
-            console.log(error)
-        }
+        const res = await this.todoModel.find(query);
+        if (!res)
+            throw new NotFoundException(`Data for give ${query} does not exit.`)
+        return res;
+
+
 
     }
 
     async updateTodo(Todo: TodoDto, id: string): Promise<TodoDto> {
-        try {
-            await this.todoModel.findByIdAndUpdate(id, Todo);
-            return this.todoModel.findById(id);
-        } catch (error) {
-            console.log(error)
-        }
+
+        const res = this.todoModel.findByIdAndUpdate(id, Todo);
+        const result = this.todoModel.findById(id);
+        return result
+
     }
 
     async createTodo(Todo: TodoDto): Promise<TodoDto> {
-        try {
-            const res = await this.todoModel.create(Todo);
-            const result = res.save();
-            return result;
-        } catch (error) {
-            console.log(error)
-        }
+        const res = await this.todoModel.create(Todo);
+        const result = res.save();
+        return result;
+
     }
 
     async deletTodo(id: string): Promise<TodoDto> {
 
-        try {
-            return await this.todoModel.findByIdAndDelete(id);
 
-        } catch (error) {
-            console.log(error)
-        }
+        return await this.todoModel.findByIdAndDelete(id);
+
     }
 
 

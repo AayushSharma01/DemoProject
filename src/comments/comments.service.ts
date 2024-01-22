@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Comment } from './comments.model';
@@ -14,57 +14,51 @@ export class CommentsService {
 
     async getComments(query: CommentQuery): Promise<CommentDto[]> {
 
-        try {
-            return await this.commentModel.find(query);
 
-        } catch (error) {
-            console.log(error)
-        }
+        const res = await this.commentModel.find(query);
+        if (!res)
+            throw new NotFoundException(`Data for give ${query} does not exit.`);
+        return res;
+
+    }
+    async getComment(id: string): Promise<CommentDto> {
+
+
+
+        const res = await this.commentModel.findById(id);
+        if (!res)
+            throw new NotFoundException(`Data for give ${id} does not exit.`)
+
+        return res;
+
+
     }
 
     async postComment(comment: CommentDto): Promise<CommentDto> {
 
-        try {
-            const res = await this.commentModel.create(comment);
-            const result = res.save();
-            return result;
 
-        } catch (error) {
-            console.log(error)
+        const res = await this.commentModel.create(comment);
+        const result = res.save();
+        return result;
 
-        }
     }
 
-    async getComment(id: string): Promise<CommentDto> {
 
-        try {
-            return await this.commentModel.findById(id);
-
-        } catch (error) {
-            console.log(error)
-
-        }
-    }
 
     async updateComment(comment: CommentDto, id: string): Promise<CommentDto> {
 
-        try {
-            await this.commentModel.findByIdAndUpdate(id, comment);
-            return this.commentModel.findById(id);
 
-        } catch (error) {
-            console.log(error)
-        }
+        await this.commentModel.findByIdAndUpdate(id, comment);
+        return this.commentModel.findById(id);
+
+
     }
 
     async deletComment(id: string): Promise<CommentDto> {
 
-        try {
-            return await this.commentModel.findByIdAndDelete(id);
 
-        } catch (error) {
+        return await this.commentModel.findByIdAndDelete(id);
 
-            console.log(error)
-        }
+
     }
 }

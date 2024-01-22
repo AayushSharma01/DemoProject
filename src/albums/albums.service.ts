@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AlbumQuery } from 'src/Query';
@@ -12,59 +12,47 @@ export class AlbumsService {
         private albumModel: Model<Album>
     ) { }
     async getAlbums(query: AlbumQuery): Promise<AlbumDto[]> {
-        try {
-            return await this.albumModel.find(query);
-        } catch (error) {
-            console.log(error);
-        }
+
+        const res = await this.albumModel.find(query);
+        if (!res)
+            throw new NotFoundException(`Data for give ${query} does not exit.`)
+        return res;
+
+    }
+    async getAlbum(id: string): Promise<AlbumDto> {
+
+        const res = await this.albumModel.findById(id);
+        if (!res)
+            throw new NotFoundException(`Data for give ${id} does not exit.`)
+        return res
+
+
     }
 
     async postAlbum(album: AlbumDto): Promise<AlbumDto> {
 
-        try {
-            const res = await this.albumModel.create(album);
-            const result = res.save();
-            return result;
+        const res = await this.albumModel.create(album);
+        const result = res.save();
+        return result;
 
-        } catch (error) {
-            console.log(error)
 
-        }
 
     }
 
-    async getAlbum(id: string): Promise<AlbumDto> {
 
-        try {
-
-            return await this.albumModel.findById(id);
-
-        } catch (error) {
-            console.log(error)
-
-        }
-    }
 
     async updateAlbum(album: AlbumDto, id: string): Promise<AlbumDto> {
 
-        try {
-            await this.albumModel.findByIdAndUpdate(id, album);
-            return this.albumModel.findById(id);
 
-        } catch (error) {
-            console.log(error)
+        await this.albumModel.findByIdAndUpdate(id, album);
+        return this.albumModel.findById(id);
 
-        }
     }
 
     async deletAlbum(id: string): Promise<AlbumDto> {
 
-        try {
-            return await this.albumModel.findByIdAndDelete(id);
+        return await this.albumModel.findByIdAndDelete(id);
 
-        } catch (error) {
-            console.log(error)
 
-        }
     }
 }

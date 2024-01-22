@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './users.model';
 import { Model } from 'mongoose';
@@ -15,54 +15,36 @@ export class UsersService {
     ) { }
 
     async getUsers(query: UserQuery): Promise<userDto[]> {
-        try {
-            const res = this.userModel.find(query);
-            return res;
-
-        } catch (error) {
-            console.log(error)
-        }
+        const res = this.userModel.find(query);
+        if(!res) 
+         throw new NotFoundException(`Data for give ${query} does not exit.`)
+        return res;
     }
 
     async getUser(id: string): Promise<userDto> {
-        try {
-            const res = this.userModel.findById(id);
-            return res;
-
-        } catch (error) {
-            console.log(error)
-        }
+        const res = this.userModel.findById(id);
+        if(!res) 
+        throw new NotFoundException(`Data for give ${id} does not exit.`)
+        return res;
     }
 
     async createUser(user: userDto): Promise<userDto> {
-        try {
             const res = await this.userModel.create(user)
             const result = res.save()
             return result;
-        } catch (error) {
-            console.log(error)
-        }
     }
 
     async updateUser(user: userDto, id: string): Promise<userDto> {
-        try {
             await this.userModel.findByIdAndUpdate(id, user);
             const res = this.userModel.findById(id)
             return res;
 
-        } catch (error) {
-            console.log(error)
-        }
+        
     }
 
     async deletUser(id: string): Promise<userDto> {
-        try {
             const res = this.userModel.findByIdAndDelete(id)
             return res;
-
-        } catch (error) {
-            console.log(error)
-        }
     }
 
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from './posts.model';
 import { Model } from 'mongoose';
@@ -13,48 +13,42 @@ export class PostsService {
     ) { }
 
     async getPosts(query: PostQuery): Promise<postDto[]> {
-        try {
-            return await this.postModel.find(query);
-        } catch (error) {
-            console.log(error)
 
-        }
+        const res = await this.postModel.find(query);
+        if (!res)
+            throw new NotFoundException(`Data for give ${query} does not exit.`);
+        return res;
+
     }
 
     async getPost(id: string): Promise<postDto> {
-        try {
-            return await this.postModel.findById(id);
-        } catch (error) {
-            console.log(error)
-        }
+
+        const res = await this.postModel.findById(id);
+        if (!res)
+            throw new NotFoundException(`Data for give ${id} does not exit.`);
+        return res;
     }
 
     async createPost(post: postDto): Promise<postDto> {
-        try {
-            const res = await this.postModel.create(post);
-            const result = res.save();
-            return result;
-        } catch (error) {
-            console.log(error)
-        }
+
+        const res = await this.postModel.create(post);
+        const result = res.save();
+        return result;
+
     }
 
     async updatePost(post: postDto, id: string): Promise<postDto> {
-        try {
-            await this.postModel.findByIdAndUpdate(id, post);
-            return this.postModel.findById(id);
-        } catch (error) {
-            console.log(error)
-        }
+
+        await this.postModel.findByIdAndUpdate(id, post);
+        return this.postModel.findById(id);
+
     }
 
     async deletPost(id: string): Promise<postDto> {
-        try {
-            return await this.postModel.findByIdAndDelete(id);
 
-        } catch (error) {
-            console.log(error)
-        }
+        return await this.postModel.findByIdAndDelete(id);
+
+
     }
 
 }
