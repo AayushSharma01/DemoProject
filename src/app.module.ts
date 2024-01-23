@@ -10,14 +10,14 @@ import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppInterceptor } from './app.interceptor';
+import { AuthModule } from './auth/auth.module';
  
 
 @Module({
   imports: [PostsModule, CommentsModule, AlbumsModule, PhotosModule, TodosModule, UsersModule , 
-  ConfigModule.forRoot({
-    isGlobal: true,
-  }),
-MongooseModule.forRoot(process.env.DB_URL) , 
+  ConfigModule.forRoot(),
+MongooseModule.forRoot(process.env.DB_URL),
+AuthModule , 
 ],
   controllers: [AppController],
   providers: [AppService , AppInterceptor],
