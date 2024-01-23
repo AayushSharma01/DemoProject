@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseInterceptors } from '@nestjs/common';
 import { PhotosService } from './photos.service';
 import { photoDto } from 'src/dto/photo-dto';
 import { query } from 'express';
 import { PhotoQuery } from 'src/Query';
+import { PhotoIntercepter } from './photos.interceptor';
 
+@UseInterceptors(PhotoIntercepter)
 @Controller()
 export class PhotosController {
     constructor(private photosService:PhotosService){}

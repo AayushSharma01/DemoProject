@@ -9,14 +9,17 @@ import { TodosModule } from './todos/todos.module';
 import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AppInterceptor } from './app.interceptor';
+ 
 
 @Module({
   imports: [PostsModule, CommentsModule, AlbumsModule, PhotosModule, TodosModule, UsersModule , 
   ConfigModule.forRoot({
     isGlobal: true,
   }),
-MongooseModule.forRoot(process.env.DB_URL)],
+MongooseModule.forRoot(process.env.DB_URL) , 
+],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService , AppInterceptor],
 })
 export class AppModule {}

@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseInterceptors } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CommentDto } from 'src/dto/comment-dto';
 import { query } from 'express';
 import { CommentQuery } from 'src/Query';
+import { CommentInterceptor } from './comments.interceptor';
 
+@UseInterceptors(CommentInterceptor)
 @Controller()
 export class CommentsController {
     constructor(private commentService:CommentsService){}

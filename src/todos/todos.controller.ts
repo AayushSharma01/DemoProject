@@ -1,8 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseInterceptors } from '@nestjs/common';
 import { TodosService } from './todos.service';
 import { TodoDto } from 'src/dto/todo-dto';
 import { TodoQuery } from 'src/Query';
+import { TodoInterceptor } from './todo.interceptors';
 
+@UseInterceptors(TodoInterceptor)
 @Controller()
 export class TodosController{
     constructor(private todosService:TodosService){}
