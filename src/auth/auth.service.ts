@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Req, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AuthUser } from './auth.user.model';
 import { LoginDto, UserDto } from 'src/dto/auth-user-dto';
 import * as bcrpyt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
 @Injectable()
 export class AuthService {
     constructor(
@@ -14,7 +15,10 @@ export class AuthService {
     ) { }
 
     async signup(user: UserDto): Promise<any> {
-        console.log(user);
+        if(user.role!=='user' && user.role!=='admin'){
+            throw new BadRequestException({message:'choose of one user and admin'});
+        }
+
         const existingUser = await this.authUserModel.findOne({ email: user.email });
         if (existingUser) {
             throw new BadRequestException({ message: 'user email already exists..' })
@@ -30,6 +34,7 @@ export class AuthService {
             name: user.name,
             email: user.email,
             password: hashPassword,
+            role:user.role
         });
 
         const result = await response.save();
@@ -37,7 +42,8 @@ export class AuthService {
 
     }
 
-    async signin(user: LoginDto) {
+    async signin(user: LoginDto ,  request:Request) {
+        
         const userData = await this.authUserModel.findOne({ email: user.email })
 
         if (!userData) {
@@ -47,7 +53,8 @@ export class AuthService {
         if (!isSame) {
             throw new UnauthorizedException()
         }
-        const payload = { sub: userData._id, username: userData.name };
+        const payload = { userId: userData._id, userName: userData.name , Role:userData.role};
+
         return {
             access_token: await this.jwtService.signAsync(payload)
         };

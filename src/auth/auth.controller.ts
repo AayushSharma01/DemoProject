@@ -1,10 +1,9 @@
-import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto, UserDto } from 'src/dto/auth-user-dto';
-import { authInterceptor } from './auth.interceptor';
+import { Request } from 'express';
 
 
-@UseInterceptors(authInterceptor)
 @Controller('auth')
 export class AuthController {
      constructor (private authService: AuthService){}
@@ -22,9 +21,11 @@ export class AuthController {
      @Post('signin')
      async signin(
         @Body()
-        user:LoginDto
+        user:LoginDto,
+        @Req()
+        request:Request
      ){
-        return await this.authService.signin(user);
+        return await this.authService.signin(user , request);
      }
     
 }

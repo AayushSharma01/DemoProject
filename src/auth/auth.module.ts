@@ -5,7 +5,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { authUserSchema } from './auth.user.model';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
-import { authInterceptor } from './auth.interceptor';
 
 @Module({
   imports:[MongooseModule.forFeature([{name:'AuthUser' , 
@@ -17,6 +16,6 @@ JwtModule.register({
   signOptions: { expiresIn: '3d' },
 })],
   controllers: [AuthController],
-  providers: [AuthService , authInterceptor]
+  providers: [AuthService]
 })
 export class AuthModule {}

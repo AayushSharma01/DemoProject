@@ -16,6 +16,10 @@ export class UserDto{
     @IsNotEmpty()
     confrimePassword:string
 
+    @IsNotEmpty()
+    @IsString()
+    role:string
+
 }
 
 export class LoginDto{

@@ -10,6 +10,9 @@ export class AuthUser{
 
     @Prop()
     password:string
+
+    @Prop()
+    role:string
 }
 
 export const authUserSchema = SchemaFactory.createForClass(AuthUser);

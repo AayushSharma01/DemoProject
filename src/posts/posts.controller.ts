@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards, UseInterceptors } from "@nestjs/common";
 import { PostsService } from "./posts.service";
 import { postDto } from "src/dto/post-dto";
 import { PostQuery } from "src/Query";
@@ -12,7 +12,7 @@ export class PostController{
      
     @Get('posts')
     async getPosts(
-        @Query() query:PostQuery
+        @Query() query:PostQuery,
     ):Promise<postDto[]>{
         return this.postsService.getPosts(query);
     }

@@ -21,5 +21,6 @@ AuthModule ,
 ],
   controllers: [AppController],
   providers: [AppService , AppInterceptor],
+  exports:[AppInterceptor]
 })
 export class AppModule {}
