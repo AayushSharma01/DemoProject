@@ -7,7 +7,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
-import { BlockModule } from 'src/block/block.module';
 
 @Global()
 @Module({
@@ -19,7 +18,7 @@ JwtModule.register({
   secret: process.env.JWT_SECRECT,
   signOptions: { expiresIn: '3d' },
 }),
-PassportModule.register({defaultStrategy:'jwt'}) , BlockModule],
+PassportModule.register({defaultStrategy:'jwt'})],
   controllers: [AuthController],
   providers: [AuthService , JwtStrategy],
   exports:[JwtStrategy , PassportModule]

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
-@Schema()
+@Schema({timestamps:true})
 export class AuthUser{
     @Prop()
     name:string
@@ -13,6 +13,12 @@ export class AuthUser{
 
     @Prop()
     role:string
+    
+    @Prop()
+    isBlocked:boolean
+
+    @Prop()
+    isLogin:boolean
 }
 
 export const authUserSchema = SchemaFactory.createForClass(AuthUser);

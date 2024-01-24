@@ -19,7 +19,7 @@ export class UserDto{
     @IsNotEmpty()
     @IsString()
     role:string
-
+    
 }
 
 export class LoginDto{

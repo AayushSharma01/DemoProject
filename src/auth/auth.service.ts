@@ -6,15 +6,13 @@ import { LoginDto, UserDto } from 'src/dto/auth-user-dto';
 import * as bcrpyt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
- import { BlockService } from 'src/block/block.service';
+import { BlockUserDto } from 'src/dto/block-user-dto';
  
 @Injectable()
 export class AuthService {
     constructor(
         @InjectModel(AuthUser.name)
         private authUserModel: Model<AuthUser>,
-
-        private blockSerive:BlockService,
         private jwtService: JwtService,
         
     ) { }
@@ -39,7 +37,9 @@ export class AuthService {
             name: user.name,
             email: user.email,
             password: hashPassword,
-            role:user.role
+            role:user.role,
+            isBlocked:false,
+            isLogin:false
         });
 
         const result = await response.save();
@@ -49,25 +49,58 @@ export class AuthService {
     }
 
     async signin(user: LoginDto ,  request:Request):Promise<{access_token:string}> {
-        const response = await this.blockSerive.sreachBlockUser({email:user.email});
-        if(response.exist){
-            throw new UnauthorizedException({message:'you are block by admin'})
-        }
         const userData = await this.authUserModel.findOne({ email: user.email })
 
         if (!userData) {
             throw new BadRequestException({ message: 'user not exists..' })
         }
-        const isSame = await bcrpyt.compare(user.password, userData.password)
-        if (!isSame) {
-            throw new UnauthorizedException()
+
+        if(userData.isBlocked){
+            throw new UnauthorizedException({meassage:'user is blocked by admin'});
         }
+
+        const isSame = await bcrpyt.compare(user.password, userData.password);
+        
+        if (!isSame) {
+            throw new UnauthorizedException({message:'password doesnot match.'})
+        }
+        userData.isLogin = true;
+        await this.authUserModel.findByIdAndUpdate(userData._id , userData)
         const payload = { _id:userData._id};
+        const token = await this.jwtService.signAsync(payload);
+        
 
         return {
-            access_token: await this.jwtService.signAsync(payload)
+            access_token: token
         };
 
          
+    }
+
+    async blockUser(user:BlockUserDto):Promise<any>{
+        const exitingUser = await this.authUserModel.findOne({email:user.email});
+        if(!exitingUser){
+            throw new BadRequestException({ message: 'user not exists..' })
+        }
+        exitingUser.isBlocked = true;
+        exitingUser.isLogin = false;
+        await this.authUserModel.findByIdAndUpdate(exitingUser._id , exitingUser);
+        return {
+            message:'user is blocked'
+        }
+
+    }
+
+    async unblockUser(user:BlockUserDto):Promise<any>{
+        const exitingUser = await this.authUserModel.findOne({email:user.email});
+        if(!exitingUser){
+            throw new BadRequestException({ message: 'user not exists..' })
+        }
+        exitingUser.isBlocked = false;
+        await this.authUserModel.findByIdAndUpdate(exitingUser._id , exitingUser);
+        return {
+            message:'user is blocked'
+        }
+
     }
 }
