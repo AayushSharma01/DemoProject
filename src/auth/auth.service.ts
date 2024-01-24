@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Req, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Headers, Injectable, Req, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AuthUser } from './auth.user.model';
@@ -38,6 +38,7 @@ export class AuthService {
         });
 
         const result = await response.save();
+    
         return result;
 
     }
@@ -53,11 +54,18 @@ export class AuthService {
         if (!isSame) {
             throw new UnauthorizedException()
         }
-        const payload = { userId: userData._id, userName: userData.name , Role:userData.role};
+        const payload = { _id:userData._id , role:userData.role};
 
         return {
             access_token: await this.jwtService.signAsync(payload)
         };
 
+
+
+    }
+
+    validate(@Headers() headers:any):boolean{
+        console.log(headers)
+        return true;
     }
 }

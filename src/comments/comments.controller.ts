@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CommentDto } from 'src/dto/comment-dto';
 import { query } from 'express';
 import { CommentQuery } from 'src/Query';
 import { CommentInterceptor } from './comments.interceptor';
+import { AuthGuard } from '@nestjs/passport';
 
 @UseInterceptors(CommentInterceptor)
 @Controller()
@@ -34,6 +35,7 @@ export class CommentsController {
         return this.commentService.getComments(query);
     }
 
+    @UseGuards(AuthGuard())
     @Post('comments')
     async postComment(
         @Body()
@@ -42,7 +44,7 @@ export class CommentsController {
         return this.commentService.postComment(comment);
     }
 
-    
+    @UseGuards(AuthGuard())
     @Put('comments/:id')
     async updateComment(
         @Body()
@@ -52,7 +54,7 @@ export class CommentsController {
         return this.commentService.updateComment(comment , id);
 
     }
-
+    @UseGuards(AuthGuard())
     @Delete('comments/:id')
     async deletComment(
         @Param('id')id:string

@@ -1,19 +1,22 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Headers, Param, Post, Put, Query,  UseGuards,  UseInterceptors } from "@nestjs/common";
 import { PostsService } from "./posts.service";
 import { postDto } from "src/dto/post-dto";
 import { PostQuery } from "src/Query";
 import { PostInterceptor } from "./posts.interceptor";
+import { AuthGuard } from "@nestjs/passport";
 
 @UseInterceptors(PostInterceptor)
 @Controller()
 export class PostController{
     constructor(private postsService:PostsService){}
 
-     
-    @Get('posts')
+   @Get('posts')
     async getPosts(
         @Query() query:PostQuery,
+        @Headers()
+        header:any
     ):Promise<postDto[]>{
+    //     console.log(header.jwttoken)
         return this.postsService.getPosts(query);
     }
 
@@ -37,6 +40,7 @@ export class PostController{
         
     }
 
+    @UseGuards(AuthGuard())
     @Post('posts')
     async createPost(
         @Body()
@@ -45,6 +49,7 @@ export class PostController{
         return this.postsService.createPost(post);
     }
 
+    @UseGuards(AuthGuard())
     @Put('posts/:id')
     async updatePost(
         @Body()
@@ -54,6 +59,8 @@ export class PostController{
         return this.postsService.updatePost(post , id);
 
     }
+    
+    @UseGuards(AuthGuard())
     @Delete('posts/:id')
     async deletPost(
         @Param('id')id:string

@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AlbumsService } from './albums.service';
 import { AlbumDto } from 'src/dto/album-dto';
 import { AlbumQuery } from 'src/Query';
 import { AblumInterceptor } from './albums.interceptor';
+import { AuthGuard } from '@nestjs/passport';
 
 @UseInterceptors(AblumInterceptor)
 @Controller()
@@ -32,6 +33,7 @@ export class AlbumsController {
 
     }
 
+    @UseGuards(AuthGuard())
     @Post('albums')
     async postAlbum(
         @Body()
@@ -41,7 +43,7 @@ export class AlbumsController {
     }
 
     
-    
+    @UseGuards(AuthGuard())
     @Put('albums/:id')
     async updateAlbum(
         @Body()
@@ -51,6 +53,8 @@ export class AlbumsController {
         return this.albumService.updateAlbum(album , id);
 
     }
+
+    @UseGuards(AuthGuard())
     @Delete('albums/:id')
     async deletAlbum(
         @Param('id')id:string

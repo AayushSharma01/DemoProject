@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { PhotosService } from './photos.service';
 import { photoDto } from 'src/dto/photo-dto';
 import { query } from 'express';
 import { PhotoQuery } from 'src/Query';
 import { PhotoIntercepter } from './photos.interceptor';
+import { AuthGuard } from '@nestjs/passport';
 
 @UseInterceptors(PhotoIntercepter)
 @Controller()
@@ -36,6 +37,7 @@ export class PhotosController {
     }
 
 
+    @UseGuards(AuthGuard())
     @Post('photos')
     async createPhtoto(
         @Body()
@@ -44,7 +46,7 @@ export class PhotosController {
         return this.photosService.postPhoto(photo);
     }
 
-    
+    @UseGuards(AuthGuard())
     @Put('photos/:id')
     async updatePhoto(
         @Body()
@@ -54,6 +56,7 @@ export class PhotosController {
         return this.photosService.updatePhoto(photo , id);
 
     }
+    @UseGuards(AuthGuard())
     @Delete('photos/:id')
     async deletPhoto(
         @Param('id')id:string

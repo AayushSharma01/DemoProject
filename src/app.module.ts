@@ -20,7 +20,7 @@ MongooseModule.forRoot(process.env.DB_URL),
 AuthModule , 
 ],
   controllers: [AppController],
-  providers: [AppService , AppInterceptor],
+  providers: [AppService , AppInterceptor ],
   exports:[AppInterceptor]
 })
 export class AppModule {}

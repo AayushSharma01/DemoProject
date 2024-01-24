@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { userDto } from 'src/dto/user-dto';
 import { UserQuery } from 'src/Query';
 import { UserInterceptor } from './users.interceptor';
 import { Request } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 
 @UseInterceptors(UserInterceptor)
 @Controller('users')
@@ -15,7 +16,6 @@ export class UsersController {
         @Query() query: UserQuery,
         @Req() request:Request
     ): Promise<userDto[]> {
-        // console.log(request)
         return this.userService.getUsers(query);
     }
 
@@ -27,6 +27,7 @@ export class UsersController {
 
     }
     
+    @UseGuards(AuthGuard())
     @Post()
     createUser(
         @Body()
@@ -36,6 +37,7 @@ export class UsersController {
 
     }
 
+    @UseGuards(AuthGuard())
     @Put('/:id')
     updateUser(
         @Body()
@@ -47,6 +49,7 @@ export class UsersController {
 
     }
 
+    @UseGuards(AuthGuard())
     @Delete('/:id')
     DeletUser(
         @Param('id') id: string

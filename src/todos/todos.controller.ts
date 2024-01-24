@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { TodosService } from './todos.service';
 import { TodoDto } from 'src/dto/todo-dto';
 import { TodoQuery } from 'src/Query';
 import { TodoInterceptor } from './todo.interceptors';
+import { AuthGuard } from '@nestjs/passport';
 
 @UseInterceptors(TodoInterceptor)
 @Controller()
@@ -42,6 +43,7 @@ export class TodosController{
          return this.todosService.getUserTodo(query); 
     }
 
+    @UseGuards(AuthGuard())
     @Post('todos')
     async createTodo(
         @Body()
@@ -49,7 +51,8 @@ export class TodosController{
     ):Promise<TodoDto>{
         return this.todosService.createTodo(Todo);
     }
-       
+
+    @UseGuards(AuthGuard())
     @Put('todos/:id')
     async updateTodo(
         @Body()
@@ -59,7 +62,8 @@ export class TodosController{
         return this.todosService.updateTodo(Todo , id);
 
     }
-
+     
+    @UseGuards(AuthGuard())
     @Delete('todos/:id')
     async deletTodo(
         @Param('id')id:string
