@@ -24,8 +24,8 @@ export class AuthController {
         user:LoginDto,
         @Req()
         request:Request
-     ){
-        return await this.authService.signin(user , request);
+     ):Promise<{access_token:string}>{
+        return  await this.authService.signin(user , request);
      }
     
 }

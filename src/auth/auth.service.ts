@@ -43,7 +43,7 @@ export class AuthService {
 
     }
 
-    async signin(user: LoginDto ,  request:Request) {
+    async signin(user: LoginDto ,  request:Request):Promise<{access_token:string}> {
         
         const userData = await this.authUserModel.findOne({ email: user.email })
 
@@ -54,7 +54,7 @@ export class AuthService {
         if (!isSame) {
             throw new UnauthorizedException()
         }
-        const payload = { _id:userData._id , role:userData.role};
+        const payload = { _id:userData._id};
 
         return {
             access_token: await this.jwtService.signAsync(payload)
