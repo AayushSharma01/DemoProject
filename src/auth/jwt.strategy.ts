@@ -4,13 +4,15 @@ import { PassportStrategy } from "@nestjs/passport";
 import { Strategy  , ExtractJwt} from "passport-jwt";
 import { AuthUser } from "./auth.user.model";
 import { Model } from "mongoose";
+import { BlockService } from "src/block/block.service";
 
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy){
    constructor(
     @InjectModel(AuthUser.name)
-    private authUserModel:Model<AuthUser>
+    private authUserModel:Model<AuthUser>,
+    private blockService:BlockService
    ){super({
     jwtFromRequest:ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey:process.env.JWT_SECRECT}
@@ -22,11 +24,15 @@ export class JwtStrategy extends PassportStrategy(Strategy){
     if(!user){
         throw new UnauthorizedException('login first to acess this routes')
     }
-
-    if(user.role!=='admin'){
-        throw new UnauthorizedException('Role is not admin..')
+     
+    const response = await this.blockService.sreachBlockUser({email:user.email});
+    if(response.exist){
+        throw new UnauthorizedException({message:'you are block by admin'})
     }
-
+    if(user.role!=='admin'){
+        throw new UnauthorizedException({message:'Role is not admin..'})
+    }
+    
     return user;
 
    }

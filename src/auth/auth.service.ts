@@ -6,12 +6,17 @@ import { LoginDto, UserDto } from 'src/dto/auth-user-dto';
 import * as bcrpyt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+ import { BlockService } from 'src/block/block.service';
+ 
 @Injectable()
 export class AuthService {
     constructor(
         @InjectModel(AuthUser.name)
         private authUserModel: Model<AuthUser>,
-        private jwtService: JwtService
+
+        private blockSerive:BlockService,
+        private jwtService: JwtService,
+        
     ) { }
 
     async signup(user: UserDto): Promise<any> {
@@ -44,7 +49,10 @@ export class AuthService {
     }
 
     async signin(user: LoginDto ,  request:Request):Promise<{access_token:string}> {
-        
+        const response = await this.blockSerive.sreachBlockUser({email:user.email});
+        if(response.exist){
+            throw new UnauthorizedException({message:'you are block by admin'})
+        }
         const userData = await this.authUserModel.findOne({ email: user.email })
 
         if (!userData) {
@@ -60,12 +68,6 @@ export class AuthService {
             access_token: await this.jwtService.signAsync(payload)
         };
 
-
-
-    }
-
-    validate(@Headers() headers:any):boolean{
-        console.log(headers)
-        return true;
+         
     }
 }

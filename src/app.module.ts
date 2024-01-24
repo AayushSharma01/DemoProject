@@ -11,13 +11,15 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppInterceptor } from './app.interceptor';
 import { AuthModule } from './auth/auth.module';
+import { BlockModule } from './block/block.module';
  
 
 @Module({
   imports: [PostsModule, CommentsModule, AlbumsModule, PhotosModule, TodosModule, UsersModule , 
   ConfigModule.forRoot(),
 MongooseModule.forRoot(process.env.DB_URL),
-AuthModule , 
+AuthModule,
+BlockModule , 
 ],
   controllers: [AppController],
   providers: [AppService , AppInterceptor ],

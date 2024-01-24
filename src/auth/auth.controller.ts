@@ -27,5 +27,5 @@ export class AuthController {
      ):Promise<{access_token:string}>{
         return  await this.authService.signin(user , request);
      }
-    
+
 }
