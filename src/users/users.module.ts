@@ -8,6 +8,7 @@ import { UserInterceptor } from './users.interceptor';
 @Module({
   imports:[MongooseModule.forFeature([{name:'User' , schema:userSchema}])],
   controllers: [UsersController],
-  providers: [UsersService , UserInterceptor]
+  providers: [UsersService , UserInterceptor],
+  exports:[UsersService]
 })
 export class UsersModule {}

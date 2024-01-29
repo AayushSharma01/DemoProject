@@ -11,6 +11,8 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppInterceptor } from './app.interceptor';
 import { AuthModule } from './auth/auth.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-yet';
  
  
 
@@ -19,6 +21,14 @@ import { AuthModule } from './auth/auth.module';
   ConfigModule.forRoot(),
 MongooseModule.forRoot(process.env.DB_URL),
 AuthModule,
+CacheModule.register({
+  isGlobal:true,
+  store:redisStore,
+  host:process.env.REDIS_URL,
+  ttl:259200000,
+  port:process.env.REDIS_PORT
+})
+ 
 ],
   controllers: [AppController],
   providers: [AppService , AppInterceptor ],

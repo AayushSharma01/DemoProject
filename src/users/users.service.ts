@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './users.model';
-import { Model } from 'mongoose';
+import mongoose, { Model, isValidObjectId } from 'mongoose';
 import { userDto } from 'src/dto/user-dto';
 import { UserQuery } from 'src/Query';
 
@@ -45,6 +45,13 @@ export class UsersService {
     async deletUser(id: string): Promise<userDto> {
             const res = this.userModel.findByIdAndDelete(id)
             return res;
+    }
+
+    async getUserDetlail(id:string):Promise<any>{
+        console.log(id)
+        const object_id = new mongoose.Types.ObjectId(id);
+        const res = await this.userModel.aggregate([{ $match: { _id:object_id}}]);
+        return res;
     }
 
 

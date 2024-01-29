@@ -15,8 +15,7 @@ export class PostController{
         @Query() query:PostQuery,
         @Headers()
         header:any
-    ):Promise<postDto[]>{
-    //     console.log(header.jwttoken)
+    ):Promise<any>{
         return this.postsService.getPosts(query);
     }
 
@@ -24,7 +23,7 @@ export class PostController{
     @Get('posts/:id')
     async getPost(
         @Param('id')id:string
-    ){
+    ):Promise<any>{
         return this.postsService.getPost(id);
 
     }

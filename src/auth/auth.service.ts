@@ -1,4 +1,4 @@
-import { BadRequestException, Headers, Injectable, Req, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Headers, Inject, Injectable, Req, UnauthorizedException, UseInterceptors } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AuthUser } from './auth.user.model';
@@ -7,14 +7,17 @@ import * as bcrpyt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { BlockUserDto } from 'src/dto/block-user-dto';
+import { CACHE_MANAGER, CacheInterceptor } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
  
+@UseInterceptors(CacheInterceptor)
 @Injectable()
 export class AuthService {
     constructor(
         @InjectModel(AuthUser.name)
         private authUserModel: Model<AuthUser>,
         private jwtService: JwtService,
-        
+        @Inject(CACHE_MANAGER) private cacheService: Cache  
     ) { }
 
     async signup(user: UserDto): Promise<any> {
@@ -43,14 +46,16 @@ export class AuthService {
         });
 
         const result = await response.save();
+         
+        await this.cacheService.set(result._id.toString() , {"name":result.name});
     
         return result;
 
     }
 
-    async signin(user: LoginDto ,  request:Request):Promise<{access_token:string}> {
+    async signin(user: LoginDto ,  request:Request):Promise<any> {
         const userData = await this.authUserModel.findOne({ email: user.email })
-
+        //  console.log(userData)
         if (!userData) {
             throw new BadRequestException({ message: 'user not exists..' })
         }
@@ -66,12 +71,13 @@ export class AuthService {
         }
         userData.isLogin = true;
         await this.authUserModel.findByIdAndUpdate(userData._id , userData)
-        const payload = { _id:userData._id};
+        const payload = { _id:userData._id , role:userData.role};
         const token = await this.jwtService.signAsync(payload);
-        
+        await this.cacheService.set(userData._id.toString() ,  userData);
 
         return {
-            access_token: token
+            message:"signIn is successfully",
+            token: token
         };
 
          
@@ -84,7 +90,9 @@ export class AuthService {
         }
         exitingUser.isBlocked = true;
         exitingUser.isLogin = false;
+
         await this.authUserModel.findByIdAndUpdate(exitingUser._id , exitingUser);
+        await this.cacheService.del(exitingUser._id.toString());
         return {
             message:'user is blocked'
         }

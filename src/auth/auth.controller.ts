@@ -17,14 +17,15 @@ export class AuthController {
      ):Promise<any>{
          return await this.authService.signup(user);
      }
+     
 
-     @Post('signin')
+     @Post('/signin')
      async signin(
         @Body()
         user:LoginDto,
         @Req()
         request:Request
-     ):Promise<{access_token:string}>{
+     ):Promise<any>{
         return  await this.authService.signin(user , request);
      }
      
