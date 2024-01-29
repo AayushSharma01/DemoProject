@@ -10,74 +10,61 @@ import { types } from 'util';
 
 @Injectable()
 export class PostsService {
-    constructor(
-        @InjectModel(Post.name)
-        private postModel: Model<Post>,
-        private usersService:UsersService
-    ) { }
+  constructor(
+    @InjectModel(Post.name)
+    private postModel: Model<Post>,
+    private usersService: UsersService,
+  ) {}
 
-    async getPosts(query: PostQuery): Promise<any> {
+  async getPosts(query: PostQuery): Promise<any> {
+    const posts = await this.postModel.find(query);
 
-        const posts = await this.postModel.find(query);
-       
-        if (!posts)
-            throw new NotFoundException(`Data for give ${query} does not exit.`);
+    if (!posts)
+      throw new NotFoundException(`Data for give ${query} does not exit.`);
 
-        
-        let resPosts = [];
-        posts.forEach(async (post)=>{
-            const userDetail = await this.usersService.getUserDetlail(post.userId);
-            resPosts.push({
-                _id:post._id,
-             title:post.title,
-             body:post.body,
-             __v:post.__v,
-             user:userDetail[0]
-            })
-        })
-        console.log(resPosts)
-        return resPosts;
+    let resPosts = [];
 
+    for (const post of posts) {
+      const userDetail = await this.usersService.getUserDetlail(post.userId);
+      resPosts.push({
+        _id: post._id,
+        title: post.title,
+        body: post.body,
+        __v: post.__v,
+        user: userDetail[0],
+      });
     }
+    return resPosts;
+  }
 
-    async getPost(id: string): Promise<any> {
+  async getPost(id: string): Promise<any> {
+    const res = await this.postModel.findById(id);
 
-        const res = await this.postModel.findById(id);
-        
-        if (!res)
-            throw new NotFoundException(`Data for give ${id} does not exit.`);
+    if (!res) throw new NotFoundException(`Data for give ${id} does not exit.`);
 
-       const userDetails =  await this.usersService.getUserDetlail(res.userId);
-        const PostRes = {
-             _id:res._id,
-             title:res.title,
-             body:res.body,
-             __v:res.__v,
-             user:userDetails[0]
-        }
-        return PostRes;
-    }
+    const userDetails = await this.usersService.getUserDetlail(res.userId);
+    const PostRes = {
+      _id: res._id,
+      title: res.title,
+      body: res.body,
+      __v: res.__v,
+      user: userDetails[0],
+    };
+    return PostRes;
+  }
 
-    async createPost(post: postDto): Promise<postDto> {
+  async createPost(post: postDto): Promise<postDto> {
+    const res = await this.postModel.create(post);
+    const result = res.save();
+    return result;
+  }
 
-        const res = await this.postModel.create(post);
-        const result = res.save();
-        return result;
+  async updatePost(post: postDto, id: string): Promise<postDto> {
+    await this.postModel.findByIdAndUpdate(id, post);
+    return this.postModel.findById(id);
+  }
 
-    }
-
-    async updatePost(post: postDto, id: string): Promise<postDto> {
-
-        await this.postModel.findByIdAndUpdate(id, post);
-        return this.postModel.findById(id);
-
-    }
-
-    async deletPost(id: string): Promise<postDto> {
-
-        return await this.postModel.findByIdAndDelete(id);
-
-
-    }
-
+  async deletPost(id: string): Promise<postDto> {
+    return await this.postModel.findByIdAndDelete(id);
+  }
 }

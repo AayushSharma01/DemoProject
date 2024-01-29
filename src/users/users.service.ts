@@ -48,7 +48,6 @@ export class UsersService {
     }
    // fecthing userDetail using Id 
     async getUserDetlail(id:string):Promise<any>{
-        console.log(id)
         const object_id = new mongoose.Types.ObjectId(id);
         const res = await this.userModel.aggregate([{ $match: { _id:object_id}}]);
         return res;
