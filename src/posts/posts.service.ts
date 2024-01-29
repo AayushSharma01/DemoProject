@@ -16,16 +16,27 @@ export class PostsService {
         private usersService:UsersService
     ) { }
 
-    async getPosts(query: PostQuery): Promise<postDto[]> {
+    async getPosts(query: PostQuery): Promise<any> {
 
-        const res = await this.postModel.find(query);
+        const posts = await this.postModel.find(query);
        
-        if (!res)
+        if (!posts)
             throw new NotFoundException(`Data for give ${query} does not exit.`);
 
         
- 
-        return res;
+        let resPosts = [];
+        posts.forEach(async (post)=>{
+            const userDetail = await this.usersService.getUserDetlail(post.userId);
+            resPosts.push({
+                _id:post._id,
+             title:post.title,
+             body:post.body,
+             __v:post.__v,
+             user:userDetail[0]
+            })
+        })
+        console.log(resPosts)
+        return resPosts;
 
     }
 

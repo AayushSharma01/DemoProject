@@ -16,7 +16,7 @@ export class PostController{
         @Headers()
         header:any
     ):Promise<any>{
-        return this.postsService.getPosts(query);
+        return await this.postsService.getPosts(query);
     }
 
 
@@ -24,7 +24,7 @@ export class PostController{
     async getPost(
         @Param('id')id:string
     ):Promise<any>{
-        return this.postsService.getPost(id);
+        return await this.postsService.getPost(id);
 
     }
 

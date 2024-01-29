@@ -46,7 +46,7 @@ export class UsersService {
             const res = this.userModel.findByIdAndDelete(id)
             return res;
     }
-
+   // fecthing userDetail using Id 
     async getUserDetlail(id:string):Promise<any>{
         console.log(id)
         const object_id = new mongoose.Types.ObjectId(id);
