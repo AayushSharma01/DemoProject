@@ -13,18 +13,88 @@ export class PhotosService {
     ) { }
     async getPhotos(query: PhotoQuery): Promise<photoDto[]> {
 
+        const stages = [];
+        if (query.albumId) {
+            stages.push({
+                $match: {
+                    albumId: query.albumId
+                }
+            })
+        }
+        if (query.title) {
+            stages.push({
+                $match: {
+                    title: query.title
+                }
+            })
+        }
+        if (query.thumbnailUrl) {
+            stages.push({
+                $match: {
+                    thumbnailUrl: query.thumbnailUrl
+                }
+            })
+        }
 
-        const res = await this.photoModel.find(query);
+        if(query.url){
+            stages.push({
+                $match:{
+                    url:query.url
+                }
+            })
+        }
+        stages.push({
+            $set: {
+                albumId: { "$toObjectId": "$albumId" }
+            }
+        })
+
+        stages.push({
+            $lookup: {
+                from: 'albums',
+                localField: "albumId",
+                foreignField: "_id",
+                as: "album"
+            }
+        })
+
+        stages.push({
+            $project: {
+                albumId: 0
+            }
+        })
+        const res = await this.photoModel.aggregate(stages);
         if (!res)
             throw new NotFoundException(`Data for give ${query} does not exit.`);
         return res;
 
     }
 
-    async getPhoto(id: string): Promise<photoDto> {
+    async getPhoto(id: string): Promise<any[]> {
 
 
-        const res = await this.photoModel.findById(id);
+        
+        const res = await this.photoModel.aggregate([
+            {$match:{
+                albumId:id
+            }},
+            {
+                $set:{
+                    albumId:{"$toObjectId":"$albumId"}
+                }
+            },
+            {$lookup:{
+                from:"albums",
+                localField:"albumId",
+                foreignField:"_id",
+                as:"album"
+            }},
+            {
+               $project:{
+                albumId:0
+               }
+            }
+        ]);
         if (!res)
             throw new NotFoundException(`Data for give ${id} does not exit.`)
         return res;

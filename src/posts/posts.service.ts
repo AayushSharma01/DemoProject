@@ -1,56 +1,82 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from './posts.model';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { postDto } from 'src/dto/post-dto';
 import { PostQuery } from 'src/Query';
-import { UsersService } from 'src/users/users.service';
-import { title } from 'process';
-import { types } from 'util';
+
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectModel(Post.name)
     private postModel: Model<Post>,
-    private usersService: UsersService,
-  ) {}
+  ) { }
 
   async getPosts(query: PostQuery): Promise<any> {
-    const posts = await this.postModel.find(query);
+    let stages = [];
+    if(query.userId){
+      stages.push({$match:{
+        userId:query.userId
+      }})
+    }
+    if(query.body){
+      stages.push({$match:{
+        body:query.body
+      }})
+    }
+    if(query.title){
+      stages.push({$match:{
+        title:query.title
+      }})
+    }
+
+    stages.push( {
+      $set:{
+       userId:{ "$toObjectId": "$userId", }
+      }
+   })
+
+   stages.push({
+    $lookup: {
+      from: "users",
+      localField: "userId",
+      foreignField: "_id",
+      as: "user"
+    }
+  })
+  stages.push({$project:{"userId":0}})
+    console.log(stages)
+    const posts = await this.postModel.aggregate(stages);
 
     if (!posts)
       throw new NotFoundException(`Data for give ${query} does not exit.`);
 
-    let resPosts = [];
-
-    for (const post of posts) {
-      const userDetail = await this.usersService.getUserDetlail(post.userId);
-      resPosts.push({
-        _id: post._id,
-        title: post.title,
-        body: post.body,
-        __v: post.__v,
-        user: userDetail[0],
-      });
-    }
-    return resPosts;
+    return posts;
   }
 
   async getPost(id: string): Promise<any> {
-    const res = await this.postModel.findById(id);
+    const _id = new mongoose.Types.ObjectId(id);
+    const res = await this.postModel.aggregate([
+      {
+         $set:{
+          userId:{ "$toObjectId": "$userId", }
+         }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      {$project:{"userId":0}},
+      { $match: { _id: _id } }]);
 
     if (!res) throw new NotFoundException(`Data for give ${id} does not exit.`);
+    return res;
 
-    const userDetails = await this.usersService.getUserDetlail(res.userId);
-    const PostRes = {
-      _id: res._id,
-      title: res.title,
-      body: res.body,
-      __v: res.__v,
-      user: userDetails[0],
-    };
-    return PostRes;
   }
 
   async createPost(post: postDto): Promise<postDto> {

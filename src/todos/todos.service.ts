@@ -14,8 +14,51 @@ export class TodosService {
     ) { }
 
     async getTodos(query: TodoQuery): Promise<TodoDto[]> {
+        const stages = [];
+        if (query.userId) {
+            stages.push({
+                $match: {
+                    userId: query.userId
+                }
+            })
+        }
+        if (query.title) {
+            stages.push({
+                $match: {
+                    title: query.title
+                }
+            })
+        }
+        if (query.completed) {
+            stages.push({
+                $match: {
+                    completed: query.completed
+                }
+            })
+        }
 
-        const res = this.todoModel.find(query)
+        stages.push({
+            $set: {
+                userId: { "$toObjectId": "$userId" }
+            }
+        })
+
+        stages.push({
+            $lookup: {
+                from: 'users',
+                localField: "userId",
+                foreignField: "_id",
+                as: "creator"
+            }
+        })
+
+        stages.push({
+            $project: {
+                userId: 0
+            }
+        })
+
+        const res = this.todoModel.aggregate(stages)
         if (!res)
             throw new NotFoundException(`Data for give ${query} does not exit.`);
         return res;
@@ -23,9 +66,30 @@ export class TodosService {
 
     }
 
-    async getTodo(id: string): Promise<TodoDto> {
+    async getTodo(id: string): Promise<any[]> {
 
-        const res = await this.todoModel.findById(id);
+        const res = await this.todoModel.aggregate([
+            {$match:{
+                userId:id
+            }},
+            {
+                $set:{
+                    userId:{"$toObjectId":"userId"}
+                }
+            },
+            {$lookup:{
+                from:"users",
+                localField:"userId",
+                foreignField:"_id",
+                as:"creator"
+            }},
+            {
+               $project:{
+                userId:0
+               }
+            }
+        ]);
+
         if (!res)
             throw new NotFoundException(`Data for give ${id} does not exit.`)
         return res;

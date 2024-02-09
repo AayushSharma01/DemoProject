@@ -12,26 +12,87 @@ export class CommentsService {
         private commentModel: Model<Comment>
     ) { }
 
-    async getComments(query: CommentQuery): Promise<CommentDto[]> {
+    async getComments(query: CommentQuery): Promise<any[]> {
 
+        const stages = [];
+        if (query.postId) {
+            stages.push({
+                $match: {
+                    postId: query.postId
+                }
+            })
+        }
+        if (query.body) {
+            stages.push({
+                $match: {
+                    body: query.body
+                }
+            })
+        }
+        if (query.email) {
+            stages.push({
+                $match: {
+                    email: query.email
+                }
+            })
+        }
 
-        const res = await this.commentModel.find(query);
+        stages.push({
+            $set: {
+                postId: { "$toObjectId": "$postId" }
+            }
+        })
+
+        stages.push({
+            $lookup: {
+                from: 'posts',
+                localField: "postId",
+                foreignField: "_id",
+                as: "post"
+            }
+        })
+
+        stages.push({
+            $project: {
+                postId: 0
+            }
+        })
+        const res = await this.commentModel.aggregate(stages)
+
         if (!res)
             throw new NotFoundException(`Data for give ${query} does not exit.`);
         return res;
 
     }
-    async getComment(id: string): Promise<CommentDto> {
+    async getComment(id: string): Promise<any[]> {
 
 
 
-        const res = await this.commentModel.findById(id);
+        const res = await this.commentModel.aggregate([
+            {
+                $set: {
+                    postId: { "$toObjectId": "postId" }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'posts',
+                    localField: "postId",
+                    foreignField: "_id",
+                    as: "post"
+                }
+            },
+            {
+                $project: {
+                    postId: 0
+                }
+            }
+
+        ])
         if (!res)
             throw new NotFoundException(`Data for give ${id} does not exit.`)
 
         return res;
-
-
     }
 
     async postComment(comment: CommentDto): Promise<CommentDto> {

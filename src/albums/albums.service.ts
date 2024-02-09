@@ -11,20 +11,82 @@ export class AlbumsService {
         @InjectModel(Album.name)
         private albumModel: Model<Album>
     ) { }
-    async getAlbums(query: AlbumQuery): Promise<AlbumDto[]> {
+    async getAlbums(query: AlbumQuery): Promise<any[]> {
+        
+        const stages = [];
 
-        const res = await this.albumModel.find(query);
+        if(query.userId){
+            stages.push({
+                $match:{
+                    userId:query.userId
+                }
+            })
+
+        }
+
+        if(query.title){
+            stages.push({
+                $match:{
+                    title:query.title
+                }
+            })
+        }
+
+        stages.push({$set:{
+            userId:{"$toObjectId": "$userId", }
+
+        }});
+
+        stages.push({
+            $lookup:{
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user"
+            }
+        })
+
+        stages.push({
+           $project:{
+            userId:0
+           }
+        })
+        
+
+        const res = await this.albumModel.aggregate(stages);
         if (!res)
             throw new NotFoundException(`Data for give ${query} does not exit.`)
         return res;
 
     }
-    async getAlbum(id: string): Promise<AlbumDto> {
+    async getAlbum(id: string): Promise<any[]> {
 
-        const res = await this.albumModel.findById(id);
+        const res = await this.albumModel.aggregate([
+            {$match:{
+                userId:id
+            }},
+            {
+                $set:{
+                    userId:{"$toObjectId":"$userId"}
+                }
+            },
+            {$lookup:{
+                from:"users",
+                localField:"userId",
+                foreignField:"_id",
+                as:"creator"
+            }},
+            {
+               $project:{
+                userId:0
+               }
+            }
+        ]);
+
         if (!res)
             throw new NotFoundException(`Data for give ${id} does not exit.`)
-        return res
+
+        return res;
 
 
     }
